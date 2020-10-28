@@ -1,5 +1,7 @@
 package apache;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +36,7 @@ public class MySinkConnector extends SinkConnector {
    */
   private static Logger log = LoggerFactory.getLogger(MySinkConnector.class);
   private MySinkConnectorConfig config;
+  private Map<String, String> settings;
 
   @Override
   public List<Map<String, String>> taskConfigs(int maxTasks) {
@@ -45,11 +48,16 @@ public class MySinkConnector extends SinkConnector {
      * in a database, you can assign a table per task.
      */
 
-    throw new UnsupportedOperationException("This has not been implemented.");
+    List<Map<String,String>> configs = new ArrayList<>();
+    configs.add(settings);
+
+    return configs;
   }
 
   @Override
   public void start(Map<String, String> settings) {
+    this.settings = settings;
+    log.error("Starting sink connector with settings {}",settings);
     config = new MySinkConnectorConfig(settings);
 
     //TODO: Add things you need to do to setup your connector.
@@ -59,7 +67,6 @@ public class MySinkConnector extends SinkConnector {
      * example if you are persisting state, you can use this to method to create your state table. You
      * could also use this to verify permissions
      */
-
   }
 
 
@@ -78,7 +85,6 @@ public class MySinkConnector extends SinkConnector {
 
   @Override
   public Class<? extends Task> taskClass() {
-    //TODO: Return your task implementation.
     return MySinkTask.class;
   }
 

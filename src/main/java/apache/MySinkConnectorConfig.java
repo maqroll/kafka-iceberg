@@ -27,6 +27,7 @@ public class MySinkConnectorConfig extends AbstractConfig {
             ConfigKeyBuilder.of(MY_SETTING_CONFIG, Type.STRING)
                 .documentation(MY_SETTING_DOC)
                 .importance(Importance.HIGH)
+                .defaultValue("cualquier cosa")
                 .build()
         );
   }

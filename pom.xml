@@ -73,6 +73,21 @@ Uncomment this second to generate a package to deploy to the Confluent Hub.
             <artifactId>iceberg-flink</artifactId>
             <version>0.9.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.12.0-rc1</version>
+        </dependency>
     </dependencies>
 
 </project>

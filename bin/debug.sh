@@ -5,7 +5,7 @@
 
 set -e
 
-mvn clean package
+#mvn clean package
 export KAFKA_JMX_OPTS="-Xdebug -agentlib:jdwp=transport=dt_socket,server=y,suspend=${SUSPEND},address=5005"
 
-connect-standalone config/connect-avro-docker.properties config/MySinkConnector.properties config/MySourceConnector.properties
+/usr/bin/connect-standalone /iceberg/config/connect-avro-docker.properties /iceberg/config/MySinkConnector.properties
