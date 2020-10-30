@@ -1,6 +1,7 @@
 package apache;
 
 import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
+import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileFormat;
@@ -30,12 +31,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import static java.nio.file.Files.createTempDirectory;
 import static org.apache.iceberg.Files.localOutput;
 
 public class MySinkTask extends SinkTask {
+  private class StoredRecords {
+    private final long offset;
+    private final DataFile dataFile;
+
+    StoredRecords(long offset, DataFile dataFile) {
+      this.offset = offset;
+      this.dataFile = dataFile;
+    }
+
+    public long getOffset() {
+      return offset;
+    }
+
+    public DataFile getDataFile() {
+      return dataFile;
+    }
+  }
+
   /*
     Your connector should never use System.out for logging. All of your classes should use slf4j
     for logging
@@ -43,7 +63,7 @@ public class MySinkTask extends SinkTask {
   private static Logger log = LoggerFactory.getLogger(MySinkTask.class);
 
   private static final Schema SCHEMA = new Schema(
-      Types.NestedField.optional(1, "id", Types.IntegerType.get()),
+      Types.NestedField.optional(1, "id", Types.LongType.get()),
       Types.NestedField.optional(2, "data", Types.StringType.get())
   );
 
@@ -55,6 +75,7 @@ public class MySinkTask extends SinkTask {
   private MySinkConnectorConfig config;
   private Path tempDirectory;
   private Table table;
+  private ConcurrentLinkedQueue<StoredRecords> storedRecords = new ConcurrentLinkedQueue<>();
 
   private final FileFormat format = FileFormat.PARQUET;
 
@@ -80,14 +101,16 @@ public class MySinkTask extends SinkTask {
 
       List<Record> recordsToWrite = records.stream().map((r) -> {
         Record record = RECORD.copy();
-        record.setField("id", /*r.kafkaOffset()*/1);
+        record.setField("id", r.kafkaOffset());
         record.setField("data", "data");
         return record;
       }).collect(Collectors.toList());
 
+      long lastOffset = (long) recordsToWrite.get(recordsToWrite.size()-1).getField("id");
+
       try {
         DataFile dataFile = writeFile(outputFile, SCHEMA, recordsToWrite);
-        table.newAppend().appendFile(dataFile).commit();
+        storedRecords.add(new StoredRecords(lastOffset, dataFile));
       } catch (IOException e) {
         log.error("Failed to write records in Iceberg",e);
         throw new IllegalStateException("Failed to write records in Iceberg", e);
@@ -99,8 +122,38 @@ public class MySinkTask extends SinkTask {
 
   @Override
   public void flush(Map<TopicPartition, OffsetAndMetadata> map) {
-    // TODO: Añadir metadata para el offset (IcebergFilesCommitter)
-    // TODO move commit here
+    if (map == null || map.size() == 0) {
+      return;
+    }
+
+    if (map.size() > 1) {
+      throw new IllegalArgumentException("More than one partition");
+    }
+
+    OffsetAndMetadata offsetAndMetadata = map.values().iterator().next();
+    long offsetToCommit = offsetAndMetadata.offset();
+
+    AppendFiles appendFiles = table.newAppend();
+    int addedFiles = 0;
+
+    while (true) {
+      StoredRecords headRecord = storedRecords.peek();
+      if (headRecord != null) {
+        if (headRecord.offset <= offsetToCommit) {
+          appendFiles = appendFiles.appendFile(headRecord.dataFile);
+          storedRecords.poll(); // used record
+          addedFiles++;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+
+    if (addedFiles > 0) {
+      appendFiles.commit();
+    }
   }
 
   @Override
