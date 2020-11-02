@@ -91,6 +91,8 @@ public class MySinkTask extends SinkTask {
       throw new IllegalArgumentException("Failed to create Iceberg table.", e);
     }
     log.error("Started connector");
+
+    // TODO load last offset from metadata
   }
 
   @Override
@@ -122,6 +124,7 @@ public class MySinkTask extends SinkTask {
 
   @Override
   public void flush(Map<TopicPartition, OffsetAndMetadata> map) {
+    // TODO save offset in metadata
     if (map == null || map.size() == 0) {
       return;
     }
@@ -158,7 +161,8 @@ public class MySinkTask extends SinkTask {
 
   @Override
   public void stop() {
-    //Close resources here.
+    // Close resources here.
+    // TODO
   }
 
   @Override
