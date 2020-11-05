@@ -61,6 +61,7 @@ public class MySinkTask extends SinkTask {
     for logging
  */
   private static Logger log = LoggerFactory.getLogger(MySinkTask.class);
+  private static final String OFFSET_ID = "kafka_offset_id";
 
   private static final Schema SCHEMA = new Schema(
       Types.NestedField.optional(1, "id", Types.LongType.get()),
@@ -124,7 +125,6 @@ public class MySinkTask extends SinkTask {
 
   @Override
   public void flush(Map<TopicPartition, OffsetAndMetadata> map) {
-    // TODO save offset in metadata
     if (map == null || map.size() == 0) {
       return;
     }
@@ -155,6 +155,7 @@ public class MySinkTask extends SinkTask {
     }
 
     if (addedFiles > 0) {
+      appendFiles.set(OFFSET_ID, String.valueOf(offsetToCommit));
       appendFiles.commit();
     }
   }
