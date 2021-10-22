@@ -1,6 +1,5 @@
 package apache;
 
-import com.github.jcustenborder.kafka.connect.utils.VersionUtil;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -168,7 +167,7 @@ public class MySinkTask extends SinkTask {
 
   @Override
   public String version() {
-    return VersionUtil.version(this.getClass());
+    return "0.0.0";
   }
 
   private DataFile writeFile(File output, Schema schema, List<Record> records) throws IOException {

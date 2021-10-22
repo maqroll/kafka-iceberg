@@ -11,72 +11,67 @@
     <name>iceberg</name>
     <description>A Kafka Connect Connector for iceberg</description>
 
-    <!-- TODO: prescindir de este parent -->
-    <parent>
-        <groupId>com.github.jcustenborder.kafka.connect</groupId>
-        <artifactId>kafka-connect-parent</artifactId>
-        <version>2.4.0</version>
-    </parent>
-
-    <scm>
-        <connection></connection>
-        <developerConnection></developerConnection>
-        <url></url>
-    </scm>
-    <issueManagement>
-        <system></system>
-        <url></url>
-    </issueManagement>
+    <properties>
+        <junit-jupiter.version>5.7.0</junit-jupiter.version>
+        <avro.version>1.10.2</avro.version>
+    </properties>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.1.2</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
-<!--
-Uncomment this second to generate a package to deploy to the Confluent Hub.
             <plugin>
-                <groupId>io.confluent</groupId>
-                <artifactId>kafka-connect-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
-                    <confluentControlCenterIntegration>true</confluentControlCenterIntegration>
-                    <documentationUrl>https://jcustenborder.github.io/kafka-connect-documentation/</documentationUrl>
-                    <componentTypes>
-                        <componentType>source</componentType>
-                        <componentType>sink</componentType>
-                        <componentType>transform</componentType>
-                        <componentType>converter</componentType>
-                    </componentTypes>
-                    <tags>
-                        <tag>iceberg</tag>
-                    </tags>
-                    <title>Kafka Connect iceberg</title>
-                    <supportUrl>${pom.issueManagement.url}</supportUrl>
-                    <supportSummary>Support provided through community involvement.</supportSummary>
-                    <excludes>
-                        <exclude>org.reflections:reflections</exclude>
-                    </excludes>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
--->
         </plugins>
 
     </build>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.iceberg</groupId>
-            <artifactId>iceberg-flink</artifactId>
-            <version>0.9.1</version>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+            <version>2.8.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-streams-avro-serde</artifactId>
+            <version>6.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>org.apache.kafka</artifactId>
+                    <groupId>kafka-clients</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>1.9.2</version>
+            <version>${avro.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-flink</artifactId>
+            <version>0.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -87,6 +82,19 @@ Uncomment this second to generate a package to deploy to the Confluent Hub.
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.12.0-rc1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

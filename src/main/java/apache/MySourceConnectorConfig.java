@@ -1,11 +1,10 @@
 package apache;
 
+import java.util.Map;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
-import org.apache.kafka.common.config.ConfigDef.Type;
 import org.apache.kafka.common.config.ConfigDef.Importance;
-import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
-import java.util.Map;
+import org.apache.kafka.common.config.ConfigDef.Type;
 
 
 
@@ -22,12 +21,10 @@ public class MySourceConnectorConfig extends AbstractConfig {
   }
 
   public static ConfigDef config() {
-    return new ConfigDef()
-        .define(
-            ConfigKeyBuilder.of(MY_SETTING_CONFIG, Type.STRING)
-                .documentation(MY_SETTING_DOC)
-                .importance(Importance.HIGH)
-                .build()
-        );
+    return new ConfigDef().define(
+        MY_SETTING_CONFIG,
+        Type.STRING,
+        Importance.HIGH,
+        MY_SETTING_DOC);
   }
 }

@@ -1,17 +1,15 @@
 package apache;
 
+import java.util.Map;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
-import org.apache.kafka.common.config.ConfigDef.Type;
 import org.apache.kafka.common.config.ConfigDef.Importance;
-import com.github.jcustenborder.kafka.connect.utils.config.ConfigKeyBuilder;
-
-import java.util.Map;
-
+import org.apache.kafka.common.config.ConfigDef.Type;
 
 public class MySinkConnectorConfig extends AbstractConfig {
 
   public static final String MY_SETTING_CONFIG = "my.setting";
+
   private static final String MY_SETTING_DOC = "This is a setting important to my connector.";
 
   public final String mySetting;
@@ -22,13 +20,11 @@ public class MySinkConnectorConfig extends AbstractConfig {
   }
 
   public static ConfigDef config() {
-    return new ConfigDef()
-        .define(
-            ConfigKeyBuilder.of(MY_SETTING_CONFIG, Type.STRING)
-                .documentation(MY_SETTING_DOC)
-                .importance(Importance.HIGH)
-                .defaultValue("cualquier cosa")
-                .build()
-        );
+    return new ConfigDef().define(
+        MY_SETTING_CONFIG,
+        Type.STRING,
+        "cualquier cosa",
+        Importance.HIGH,
+        MY_SETTING_DOC);
   }
 }
