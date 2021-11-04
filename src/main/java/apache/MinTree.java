@@ -185,7 +185,6 @@ public class MinTree {
         break;
     }
 
-    // FIX filter out elements != GenericRecord
     if (!next.isEmpty()) {
       for (Node child : node.nodes()) {
         visitInOrderInner(next,child);
