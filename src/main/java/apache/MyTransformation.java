@@ -11,6 +11,16 @@ import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.transforms.Transformation;
 
+/**
+ * This transformation deliberately ignores the KC model (converter -> transformation -> converter).
+ *
+ * Of course it can't be reused across different input formats.
+ *
+ * Written to explore a different approach to handle transformations over avro messages with very specific requirements (input and
+ * output schemas must be EXACTLY the same).
+ * 
+ * @param <R>
+ */
 public abstract class MyTransformation<R extends ConnectRecord<R>> implements Transformation<R> {
   public static final String FIELDS_CONFIG = "fields";
   private static final String SEPARATOR_CONFIG = "separator";
