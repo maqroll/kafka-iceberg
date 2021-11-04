@@ -2,12 +2,11 @@ package apache;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
 import org.apache.kafka.common.config.ConfigDef.Type;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.connect.connector.ConnectRecord;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.transforms.Transformation;
@@ -21,13 +20,16 @@ public abstract class MyTransformation<R extends ConnectRecord<R>> implements Tr
   private List<String> maskedFields;
   private String separator;
 
+  private String schemaRegistry;
+
+  private Serde<GenericRecord> genericSerde;
+
+  private MinTree minTree;
+
   @Override
   public R apply(R record) {
-    if (operatingSchema(record) == null) {
-      return applySchemaless(record);
-    } else {
-      return applyWithSchema(record);
-    }
+    // assume schemaless
+    return applySchemaless(record);
   }
 
   private R applySchemaless(R record) {
@@ -38,11 +40,18 @@ public abstract class MyTransformation<R extends ConnectRecord<R>> implements Tr
     // walk through avro schema
     //
     // limitations:
-    // use unions just to make a field nullable
     // leaf must be string
     // silently ignore if types doesn't match
-    GenericRecord a = (GenericRecord) record;
-    return record;
+    byte[] value = (byte[]) record.value();
+
+    GenericRecord avroRecord = genericSerde.deserializer().deserialize(record.topic(), value);
+
+    minTree.visitInOrder(avroRecord);
+
+    // don't generate new schemas!!
+    byte[] output = genericSerde.serializer().serialize(record.topic(), avroRecord);
+
+    return newRecord(record,output);
   }
 
   private R applyWithSchema(R record) {
@@ -84,6 +93,11 @@ public abstract class MyTransformation<R extends ConnectRecord<R>> implements Tr
 
     this.maskedFields = (List<String>) parse.get(FIELDS_CONFIG);
     this.separator = (String) parse.get(SEPARATOR_CONFIG);
+    this.schemaRegistry = (String) parse.get(SCHEMA_REGISTRY);
+
+    genericSerde = AvroSerdes.Generic(this.schemaRegistry, false);
+
+    minTree = new MinTree(maskedFields, separator);
   }
 
   protected abstract Schema operatingSchema(R record);
